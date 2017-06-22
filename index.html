@@ -33,15 +33,81 @@
 	</head>
 
 	<body>
-		<script src="build/three.min.js"></script>
-		<script src="js/controls/FirstPersonControls.js"></script>
+		<div id="info">
+			<p>
+				A 3D-scan of a student room. Move around with W, A, S, D keys and the mouse. <br>
+				The model is 71019 triangles. I'm using OpenCTM compressed mesh format to reduce mesh file size from 4.5 MB to only 0.3 MB.<br>
+				Converting obj->ctm gave cracks in the uv-seams, as can be seen on the small model standing on my desk. <br>
+			    I made a small patch for the OpenCTM format (coded in C, originally by Marcus Geelnard (Opera)) that ensures a 1-1 mapping between vertices and uv-coordinates.
+			</p> 
+		</div>
 
+		
+		<script src="js/THREE_models_preloader.min.js"></script>
 		<script src="js/loaders/ctm/lzma.js"></script>
 		<script src="js/loaders/ctm/ctm.js"></script>
 		<script src="js/loaders/ctm/CTMLoader.js"></script>
+		<script>
+			// creating the texture here so it'll be finished when the geometry is loaded
+			var tex = THREE.ImageUtils.loadTexture( 'tex_0.jpg' ); 
+
+			
+
+			var loader = new THREE.CTMLoader();
+
+			loader.load( "untitled_Reduced.ctm",  function( geometry ) {
+				var material1 = new THREE.MeshLambertMaterial( 
+				{map: tex} );
+				callbackModel.apply(this, new Array(geometry, 4, material1, 150, 0, 0, -Math.PI/2, 0, Math.PI/4));
+			}, { useWorker: true } );		
+
+			loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
+				var material1 = new THREE.MeshLambertMaterial( 
+				{map: tex} );
+				callbackModel.apply(this, new Array(geometry, 4, material1, 0, 0, 0, -Math.PI/2, 0, Math.PI/4));
+			}, { useWorker: true } );
+
+			loader.load( "untitled_Reduced.ctm",  function( geometry ) {
+				var material1 = new THREE.MeshLambertMaterial( 
+				{map: tex} );
+				callbackModel.apply(this, new Array(geometry, 0.2, material1, 50, -3.8, -26, -Math.PI/2, 0, Math.PI/4));
+			}, { useWorker: true } );
+
+
+			var meshes = [];
+
+			function callbackModel( geometry, s, material, x, y, z, rx, ry, rz ) {
+
+				var mesh = new THREE.Mesh( geometry, material );
+
+				mesh.position.set( x, y, z );
+				mesh.scale.set( s, s, s );
+				mesh.rotation.x = rx;
+				mesh.rotation.y = ry;
+				mesh.rotation.z = rz;
+
+				mesh.castShadow = true;
+				mesh.receiveShadow = true;
+
+				meshes.push(mesh);
+
+			}
+		</script>
+
+
+		<script src="build/three.min.js"></script>
+		<script src="js/controls/FirstPersonControls.js"></script>
+
 
 		<script src="js/Detector.js"></script>
 		<script src="js/libs/stats.min.js"></script>
+
+		<--
+		<script src="js/postprocessing/EffectComposer.js"></script>
+		<script src="js/shaders/SepiaShader.js"></script>
+		<script src="js/postprocessing/ShaderPass.js"></script>
+		<script src="js/shaders/CopyShader.js"></script>
+--!>
 
 		<script>
 
@@ -75,7 +141,7 @@
 				camera.position.z = 0;
 
 				controls = new THREE.FirstPersonControls( camera );
- 				controls.movementSpeed = 30;
+ 				controls.movementSpeed = 40;
 				controls.lookSpeed = 0;//0.125;
 				controls.lookVertical = true;
 
@@ -124,65 +190,15 @@
 				window.addEventListener( 'resize', onWindowResize, false );
 				
 				window.addEventListener( 'mousemove', onDocumentMouseMove, false );
-				var loader = new THREE.CTMLoader();
+				
 
 				
-				loader.load( "untitled_Reduced.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
-					callbackModel.apply(this, new Array(geometry, 4, material1, 150, 0, 0, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );		
-
-				loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
-					callbackModel.apply(this, new Array(geometry, 4, material1, 0, 0, 0, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );
-
-				loader.load( "untitled_Reduced.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
-					callbackModel.apply(this, new Array(geometry, 0.2, material1, 50, -3.8, -26, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );
-				
-				loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
-					callbackModel.apply(this, new Array(geometry, 0.01, material1, 52.5, -3.95, -27.4, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );
-			}
-
-			function createScene( geometry, scale, material ) {
-
-				mesh = new THREE.Mesh( geometry, material );
-
-				mesh.rotation.x = -1;
-				mesh.scale.set( scale, scale, scale );
-
-				mesh.castShadow = true;
-				mesh.receiveShadow = true;
-
-				scene.add( mesh );
+				// setupShaderSepia();
 
 
 			}
 
-			function callbackModel( geometry, s, material, x, y, z, rx, ry, rz ) {
 
-				var mesh = new THREE.Mesh( geometry, material );
-
-				mesh.position.set( x, y, z );
-				mesh.scale.set( s, s, s );
-				mesh.rotation.x = rx;
-				mesh.rotation.y = ry;
-				mesh.rotation.z = rz;
-
-				mesh.castShadow = true;
-				mesh.receiveShadow = true;
-
-				scene.add( mesh );
-
-			}
 
 			function onWindowResize( event ) {
 
@@ -208,7 +224,6 @@
 				var hyp = Math.sqrt( mouseX*mouseX + mouseY*mouseY );
 				var normalizer = Math.sqrt( SCREEN_WIDTH*SCREEN_WIDTH + SCREEN_HEIGHT*SCREEN_HEIGHT ) / 2;
 				normalizedHyp = hyp / normalizer;
-				console.log(normalizedHyp );
 				if(normalizedHyp < 0.1){
 					normalizedHyp = 0;
 				}
@@ -219,6 +234,11 @@
 
 				requestAnimationFrame( animate );
 
+				// should be triggered from an onload event instead
+				while((mesh = meshes.pop()) != null){
+					scene.add( mesh );
+				}
+				
 				render();
 				stats.update();
 
@@ -231,6 +251,24 @@
 
 			}
 
+			function setupShaderNone()
+			{
+				shaderActive = "none";
+			}
+
+	
+			// function setupShaderSepia()
+			// {
+			// 	composer = new THREE.EffectComposer( renderer );
+			// 	composer.addPass( new THREE.RenderPass( scene, camera ) );
+				
+			// 	var shaderSepia = THREE.SepiaShader;
+			// 	var effectSepia = new THREE.ShaderPass( shaderSepia );
+			// 	effectSepia.uniforms[ "amount" ].value = 0.9;
+			// 	effectSepia.renderToScreen = true;
+			// 	composer.addPass(effectSepia);
+			// 	// shaderActive = "sepia";	
+			// }
 		</script>
 
 	</body>
