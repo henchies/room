@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - io - CTM loader</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				color: #fff;
+				margin: 0px;
+				overflow: hidden;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 10px;
+				width: 100%;
+				text-align: center;
+				z-index: 100;
+				display:block;
+			}
+
+			#info a, .button { color: #f00; font-weight: bold; text-decoration: underline; cursor: pointer }
+
+			#stats { position: absolute; top:0; left: 0 }
+			#stats #fps { background: transparent !important }
+			#stats #fps #fpsText { color: #aaa !important }
+			#stats #fps #fpsGraph { display: none }
+		</style>
+	</head>
+
+	<body>
+		<script src="build/three.min.js"></script>
+		<script src="js/controls/FirstPersonControls.js"></script>
+
+		<script src="js/loaders/ctm/lzma.js"></script>
+		<script src="js/loaders/ctm/ctm.js"></script>
+		<script src="js/loaders/ctm/CTMLoader.js"></script>
+
+		<script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script>
+
+		<script>
+
+			var SCREEN_WIDTH = window.innerWidth;
+			var SCREEN_HEIGHT = window.innerHeight;
+
+			var container, stats;
+
+			var camera, controls, scene, renderer;
+
+			var mesh, zmesh, geometry;
+
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var clock = new THREE.Clock();	
+
+			
+			init();
+			animate();
+
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 70, SCREEN_WIDTH / SCREEN_HEIGHT, 0.01, 20000 );
+				camera.position.z = 0;
+
+				controls = new THREE.FirstPersonControls( camera );
+ 				controls.movementSpeed = 30;
+				controls.lookSpeed = 0;//0.125;
+				controls.lookVertical = true;
+
+				scene = new THREE.Scene();
+
+
+				var ambient = new THREE.AmbientLight( 0xFFFFFF );
+				scene.add( ambient );
+
+				var light = new THREE.SpotLight( 0xffeedd, 1.2, 650, 2.5, 3 );
+				light.position.set( 0, -100, 500 );
+
+				light.castShadow = true;
+				light.shadowMapWidth = 2048;
+				light.shadowMapHeight = 2048;
+				light.shadowCameraFov = 45;
+				//light.shadowCameraVisible = true;
+
+				scene.add( light );
+
+
+				// RENDERER
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+
+				renderer.domElement.style.position = "relative";
+				container.appendChild( renderer.domElement );
+
+				//
+
+				renderer.gammaInput = true;
+				renderer.gammaOutput = true;
+				renderer.physicallyBasedShading = true;
+
+				renderer.shadowMapEnabled = false;
+
+				// STATS
+
+				stats = new Stats();
+				container.appendChild( stats.domElement );
+
+				// EVENTS
+
+				window.addEventListener( 'resize', onWindowResize, false );
+				
+				window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				var loader = new THREE.CTMLoader();
+
+				
+				loader.load( "untitled_Reduced.ctm",  function( geometry ) {
+					var material1 = new THREE.MeshLambertMaterial( 
+					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
+					callbackModel.apply(this, new Array(geometry, 4, material1, 150, 0, 0, -Math.PI/2, 0, Math.PI/4));
+				}, { useWorker: true } );		
+
+				loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
+					var material1 = new THREE.MeshLambertMaterial( 
+					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
+					callbackModel.apply(this, new Array(geometry, 4, material1, 0, 0, 0, -Math.PI/2, 0, Math.PI/4));
+				}, { useWorker: true } );
+
+				loader.load( "untitled_Reduced.ctm",  function( geometry ) {
+					var material1 = new THREE.MeshLambertMaterial( 
+					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
+					callbackModel.apply(this, new Array(geometry, 0.2, material1, 50, -3.8, -26, -Math.PI/2, 0, Math.PI/4));
+				}, { useWorker: true } );
+				
+				loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
+					var material1 = new THREE.MeshLambertMaterial( 
+					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
+					callbackModel.apply(this, new Array(geometry, 0.01, material1, 52.5, -3.95, -27.4, -Math.PI/2, 0, Math.PI/4));
+				}, { useWorker: true } );
+			}
+
+			function createScene( geometry, scale, material ) {
+
+				mesh = new THREE.Mesh( geometry, material );
+
+				mesh.rotation.x = -1;
+				mesh.scale.set( scale, scale, scale );
+
+				mesh.castShadow = true;
+				mesh.receiveShadow = true;
+
+				scene.add( mesh );
+
+
+			}
+
+			function callbackModel( geometry, s, material, x, y, z, rx, ry, rz ) {
+
+				var mesh = new THREE.Mesh( geometry, material );
+
+				mesh.position.set( x, y, z );
+				mesh.scale.set( s, s, s );
+				mesh.rotation.x = rx;
+				mesh.rotation.y = ry;
+				mesh.rotation.z = rz;
+
+				mesh.castShadow = true;
+				mesh.receiveShadow = true;
+
+				scene.add( mesh );
+
+			}
+
+			function onWindowResize( event ) {
+
+				SCREEN_WIDTH = window.innerWidth;
+				SCREEN_HEIGHT = window.innerHeight;
+
+				windowHalfX = SCREEN_WIDTH / 2;
+				windowHalfY = SCREEN_HEIGHT / 2;
+
+				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+
+				camera.aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
+				camera.updateProjectionMatrix();
+
+			}
+			
+			function onDocumentMouseMove(event) {
+
+				mouseX = ( event.clientX - windowHalfX );
+				mouseY = ( event.clientY - windowHalfY );
+
+
+				var hyp = Math.sqrt( mouseX*mouseX + mouseY*mouseY );
+				var normalizer = Math.sqrt( SCREEN_WIDTH*SCREEN_WIDTH + SCREEN_HEIGHT*SCREEN_HEIGHT ) / 2;
+				normalizedHyp = hyp / normalizer;
+				console.log(normalizedHyp );
+				if(normalizedHyp < 0.1){
+					normalizedHyp = 0;
+				}
+				controls.lookSpeed = 0.125*normalizedHyp;
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				render();
+				stats.update();
+
+			}
+
+			function render() {
+
+				controls.update( clock.getDelta() );
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
