@@ -134,30 +134,25 @@
 				window.addEventListener( 'mousemove', onDocumentMouseMove, false );
 				var loader = new THREE.CTMLoader();
 
-				
-				loader.load( "untitled_Reduced.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
-					callbackModel.apply(this, new Array(geometry, 4, material1, 150, 0, 0, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );		
+				loader.load( "Capture_2013_12_30_20_24_56_patched.ctm.js", addPatchedModels, { useWorker: true } );
+				loader.load( "Capture_2013_12_30_20_24_56.ctm.js",  addOriginalModels, { useWorker: true } );
+				var material1 = new THREE.MeshLambertMaterial({map: THREE.ImageUtils.loadTexture( "tex_0_low.jpg" )} );
 
-				loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
+				function addPatchedModels( geometry ) {
+					// Add normal sized original model (with cracks)
 					callbackModel.apply(this, new Array(geometry, 4, material1, 0, 0, 0, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );
 
-				loader.load( "untitled_Reduced.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
+					// Add small sized original model (with cracks) placed on top of the desktop in the scene
 					callbackModel.apply(this, new Array(geometry, 0.2, material1, 50, -3.8, -26, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );
-				
-				loader.load( "Capture_2013_12_30_20_24_56.ctm",  function( geometry ) {
-					var material1 = new THREE.MeshLambertMaterial( 
-					{map: THREE.ImageUtils.loadTexture( "tex_0.jpg" )} );
-					callbackModel.apply(this, new Array(geometry, 0.01, material1, 52.5, -3.95, -27.4, -Math.PI/2, 0, Math.PI/4));
-				}, { useWorker: true } );
+				}
+
+				function addOriginalModels( geometry ) {
+					// Add normal sized patched model
+					callbackModel.apply(this, new Array(geometry, 4, material1, 150, 0, 0, -Math.PI/2, 0, Math.PI/4));
+
+					// Add even smaller sized patched model into the small sized original model
+				 	callbackModel.apply(this, new Array(geometry, 0.01, material1, 52.5, -3.95, -27.4, -Math.PI/2, 0, Math.PI/4));
+				}
 			}
 
 			function createScene( geometry, scale, material ) {
